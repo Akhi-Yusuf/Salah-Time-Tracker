@@ -1,0 +1,593 @@
+:root {
+  --gold: #d4af37;
+  --gold-600: #b8941a;
+  --gold-400: #e9c55a;
+  
+  /* Dark theme colors (default) */
+  --bg-primary: #111827; /* gray-900 */
+  --bg-secondary: #1f2937; /* gray-800 */
+  --bg-tertiary: #374151; /* gray-700 */
+  --bg-input: #4B5563; /* gray-600 */
+  --text-primary: #ffffff; /* white */
+  --text-secondary: #9ca3af; /* gray-400 */
+  --text-tertiary: #6b7280; /* gray-500 */
+  --border-color: rgba(184, 148, 26, 0.2); /* gold-600/20 */
+  --hover-border-color: rgba(233, 197, 90, 0.4); /* gold-400/40 */
+  --gold-bg-soft: rgba(212, 175, 55, 0.2); /* gold/20 */
+  --shadow-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Light theme with improved contrast */
+.light-theme {
+  /* Darker gold tones for better contrast on light backgrounds */
+  --gold: #8b6d14; /* Much darker gold for text */
+  --gold-600: #755c11; /* Even darker gold for borders/secondary elements */
+  --gold-400: #a87f17; /* Darker gold for hover states */
+  
+  /* Keep background colors with subtle differentiation */
+  --bg-primary: #f8fafc; /* slate-50 */
+  --bg-secondary: #ffffff; /* white */
+  --bg-tertiary: #e2e8f0; /* slate-200 - darker for better contrast with content */
+  --bg-input: #cbd5e1; /* slate-300 - darker input backgrounds */
+  
+  /* Much darker text colors for better contrast */
+  --text-primary: #0f172a; /* slate-900 */
+  --text-secondary: #1e293b; /* slate-800 - darker for better contrast */
+  --text-tertiary: #334155; /* slate-700 - darker for better contrast */
+  
+  /* Darker borders and accents */
+  --border-color: rgba(139, 109, 20, 0.4); /* gold/40 - more opaque */
+  --hover-border-color: rgba(139, 109, 20, 0.8); /* gold/80 - much more visible */
+  --gold-bg-soft: rgba(139, 109, 20, 0.2); /* gold/20 */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Apply theme colors */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.bg-gray-900 {
+  background-color: var(--bg-primary);
+}
+
+.bg-gray-800 {
+  background-color: var(--bg-secondary);
+}
+
+.bg-gray-700\/50, .bg-gray-700 {
+  background-color: var(--bg-tertiary);
+}
+
+.bg-gray-600 {
+  background-color: var(--bg-input);
+}
+
+.text-white {
+  color: var(--text-primary);
+}
+
+.text-gray-400 {
+  color: var(--text-secondary);
+}
+
+.text-gray-300, .text-gray-500 {
+  color: var(--text-tertiary);
+}
+
+.border-gray-600, .border-gray-700 {
+  border-color: var(--text-tertiary);
+}
+
+.border-gold-600\/20 {
+  border-color: var(--border-color);
+}
+
+.hover\:border-gold-400\/40:hover {
+  border-color: var(--hover-border-color);
+}
+
+.text-gold {
+  color: var(--gold);
+}
+
+.bg-gold {
+  background-color: var(--gold);
+  animation: none;
+}
+
+.bg-gold-600 {
+  background-color: var(--gold-600);
+}
+
+.hover\:bg-gold-600:hover {
+  background-color: var(--gold-600);
+}
+
+.focus\:ring-gold:focus {
+  --tw-ring-color: var(--gold);
+}
+
+.border-gold-600\/20 {
+  border-color: rgba(184, 148, 26, 0.2);
+}
+
+.hover\:border-gold-400\/40:hover {
+  border-color: rgba(233, 197, 90, 0.4);
+}
+
+.next-prayer {
+  position: relative;
+  overflow: hidden;
+}
+
+.next-prayer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(212, 175, 55, 0.05), rgba(212, 175, 55, 0.2));
+  z-index: 0;
+}
+
+.next-prayer > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Settings Panel */
+#settingsPanel:not(.hidden) {
+  display: block;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Ensure settings panel is visible when not hidden */
+#settingsPanel:not(.hidden) {
+  display: block;
+}
+
+/* Make settings controls more visible */
+#settingsPanel select, 
+#settingsPanel input {
+  background-color: rgba(40, 40, 40, 0.8);
+  border: 1px solid var(--gold-600);
+  transition: all 0.2s ease;
+}
+
+#settingsPanel select:focus, 
+#settingsPanel input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.3);
+}
+
+/* Settings Panel Slide Animation */
+#settingsPanel.open {
+  transform: translateX(0);
+}
+
+/* For mobile, make the panel wider */
+@media (max-width: 768px) {
+  #settingsPanel {
+    box-shadow: -10px 0 20px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Handle the scrollbar inside the settings panel */
+#settingsPanel .overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+#settingsPanel .overflow-y-auto::-webkit-scrollbar-track {
+  background-color: rgba(55, 65, 81, 0.5);
+}
+
+#settingsPanel .overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: var(--gold-600);
+  border-radius: 3px;
+}
+
+/* Animation for the backdrop */
+#settingsBackdrop {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+#settingsBackdrop.open {
+  opacity: 1;
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Green success color */
+.bg-green-600 {
+  background-color: #059669;
+}
+
+/* Yellow for pending changes */
+.bg-yellow-500 {
+  background-color: #f59e0b;
+}
+
+.text-yellow-400 {
+  color: #fbbf24;
+}
+
+/* Pulse animation for the apply button */
+.animate-pulse {
+  animation: none;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Location prompt transition */
+#location-prompt {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Highlight location section */
+#locationSearch {
+  border-width: 2px;
+}
+
+/* Style for the current time when waiting for location */
+#current-time:empty::before,
+#current-date:empty::before {
+  content: "...";
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Loading effect for the time */
+.time-loading {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Location prompt styling */
+#location-prompt .bg-gray-800 {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Text color for warning */
+.text-yellow-400 {
+  color: #facc15;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Settings gear icon */
+#openSettings {
+  transition: transform 0.3s ease;
+}
+
+#openSettings:hover {
+  transform: rotate(30deg);
+}
+
+/* Add a subtle pulsing effect when clicked */
+#openSettings:active {
+  animation: pulse 0.3s ease;
+}
+
+/* Mobile responsiveness for settings icon */
+@media (max-width: 640px) {
+  #openSettings svg {
+    height: 1.5rem;
+    width: 1.5rem;
+  }
+}
+
+/* Prayer window styles */
+.bg-gold\/20 {
+  background-color: rgba(212, 175, 55, 0.2);
+}
+
+.bg-gold-600\/60 {
+  background-color: rgba(184, 148, 26, 0.6);
+  animation: none;
+}
+
+.border-gold {
+  border-color: var(--gold);
+}
+
+.border-gold-600\/30 {
+  border-color: rgba(184, 148, 26, 0.3);
+}
+
+.border-gold-600\/60 {
+  border-color: rgba(184, 148, 26, 0.6);
+}
+
+@keyframes pulseBorder {
+  0%, 100% {
+    border-color: var(--gold);
+  }
+  50% {
+    border-color: rgba(212, 175, 55, 0.5);
+  }
+}
+
+/* Progress bar animation */
+@keyframes progress-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1; /* Set to 1 to disable pulsing */
+  }
+}
+
+/* Prayer window container fixes */
+#prayer-times-grid {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure text doesn't overflow */
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ensure consistent spacing */
+.my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Adjust container height */
+.h-64 {
+  height: 16rem;
+}
+
+@media (min-width: 768px) {
+  .h-64 {
+    height: 18rem;
+  }
+}
+
+/* Ensure small text doesn't break layout */
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+/* Theme toggle switch */
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.theme-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-tertiary);
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.theme-switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: var(--gold);
+  transition: .4s;
+  border-radius: 50%;
+}
+
+.theme-switch input:checked + .slider {
+  background-color: var(--bg-tertiary);
+}
+
+.theme-switch input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.light-theme .theme-switch .slider:before {
+  background-color: var(--gold);
+}
+
+/* Icon inside the slider */
+.theme-switch .slider:after {
+  content: "☾";
+  color: var(--gold);
+  display: block;
+  position: absolute;
+  transform: translate(-50%,-50%);
+  top: 50%;
+  left: 70%;
+  font-size: 12px;
+}
+
+.theme-switch input:checked + .slider:after {
+  content: "☀";
+  left: 30%;
+}
+
+/* Fix Settings Panel for light theme */
+.light-theme #settingsPanel {
+  background-color: var(--bg-secondary);
+  box-shadow: -2px 0 20px var(--shadow-color);
+}
+
+.light-theme #settingsPanel select, 
+.light-theme #settingsPanel input {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--gold-600);
+}
+
+.light-theme #settingsBackdrop {
+  background-color: rgba(15, 23, 42, 0.3); /* slate-900/30 */
+}
+
+/* Improve theme toggle in light mode */
+.light-theme .theme-switch .slider {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--gold-600);
+}
+
+.light-theme .theme-switch .slider:after {
+  color: var(--gold); 
+}
+
+/* Fix background colors for cards in light theme */
+.light-theme .bg-gold\/20 {
+  background-color: var(--gold-bg-soft);
+}
+
+.light-theme .bg-gold-600\/60 {
+  background-color: rgba(139, 109, 20, 0.5); /* More opaque for better contrast */
+}
+
+/* Fix prayer window progress bar in light theme */
+.light-theme .bg-gold {
+  background-color: var(--gold);
+}
+
+/* Enhance progress bar visibility in light theme */
+.light-theme .bg-gray-700 {
+  background-color: #cbd5e1; /* slate-300 for better contrast */
+}
+
+/* Improve visibility of text on cards in light theme */
+.light-theme .text-gray-300,
+.light-theme .text-gray-400 {
+  color: #334155; /* Ensure secondary text is dark enough */
+}
+
+/* Additional improvements for light theme contrast */
+.light-theme .border-gray-700,
+.light-theme .border-gray-600 {
+  border-color: #94a3b8; /* slate-400 for visible borders */
+}
+
+.light-theme #settingsPanel select, 
+.light-theme #settingsPanel input {
+  background-color: #ffffff; /* Pure white background */
+  color: #0f172a; /* Very dark text */
+  border: 1px solid var(--gold);
+}
+
+/* Make error messages more visible in light theme */
+.light-theme #error-message {
+  background-color: #dc2626; /* red-600 - darker red */
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Fix button contrast in light theme */
+.light-theme .bg-gray-700.hover\:bg-gray-600 {
+  background-color: #e2e8f0; /* slate-200 */
+  color: #0f172a; /* Very dark text */
+}
+
+.light-theme .hover\:bg-gray-600:hover {
+  background-color: #cbd5e1; /* slate-300 */
+}
+
+/* Fix table headers in light theme */
+.light-theme th.text-gold {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* Improve progress bars in light mode */
+.light-theme .bg-gray-700.rounded-full {
+  background-color: #cbd5e1; /* slate-300 */
+}
+
+.light-theme .bg-gray-800.rounded-full {
+  background-color: #94a3b8; /* slate-400 */
+}
+
+/* Make additional times titles brighter in dark theme */
+#additional-times li .text-gray-300 {
+  color: #e5e7eb; /* gray-200 - brighter than the default text-tertiary */
+}
+
+/* Keep light theme text as is with good contrast */
+.light-theme #additional-times li .text-gray-300 {
+  color: #334155; /* Keep the existing slate-700 color for light theme */
+}
+
+/* Custom scrollbar for the entire application */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--bg-secondary);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--gold-600);
+  border-radius: 10px;
+  border: 2px solid var(--bg-secondary);
+  transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--gold);
+}
+
+/* Firefox scrollbar (uses different syntax) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-600) var(--bg-secondary);
+}
+
+/* Make scrollbar corners match the theme */
+::-webkit-scrollbar-corner {
+  background-color: var(--bg-secondary);
+}
+
+/* Ensure the scrollbar fits well in both themes */
+.light-theme ::-webkit-scrollbar-track {
+  background-color: var(--bg-tertiary);
+}
+
+.light-theme ::-webkit-scrollbar-thumb {
+  border-color: var(--bg-tertiary);
+}
