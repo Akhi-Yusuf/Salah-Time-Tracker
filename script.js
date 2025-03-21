@@ -1076,7 +1076,7 @@ function fetchCurrentTime() {
 
 // Fallback to using local time with timezone adjustment
 function fallbackToLocalTime() {
-    // Create a message about using estimated time
+    // Create a message about using estimated time - without changing color or adding notes
     document.getElementById('current-time').textContent = new Date().toLocaleTimeString();
     document.getElementById('current-date').textContent = new Date().toLocaleDateString(undefined, { 
         weekday: 'long', 
@@ -1084,18 +1084,6 @@ function fallbackToLocalTime() {
         month: 'long', 
         day: 'numeric' 
     });
-    document.getElementById('current-time').classList.add('text-yellow-400');
-    
-    // Add a small note about using estimated time
-    const timeBox = document.getElementById('current-time').parentNode;
-    let noteElement = document.getElementById('time-note');
-    if (!noteElement) {
-        noteElement = document.createElement('div');
-        noteElement.id = 'time-note';
-        noteElement.className = 'text-xs text-yellow-400 mt-1';
-        noteElement.textContent = '* Using estimated time for this location';
-        timeBox.appendChild(noteElement);
-    }
     
     // Still use local incrementing but with better background handling
     locationTime = new Date();
@@ -1104,13 +1092,13 @@ function fallbackToLocalTime() {
     lastTimestamp = Date.now();
     timeOffset = 0;
     
-    // IMPORTANT FIX: Ensure old intervals are cleared before creating a new one
+    // Clear any existing interval
     if (locationTimeInterval) {
         clearInterval(locationTimeInterval);
         locationTimeInterval = null;
     }
     
-    // Use the new requestAnimationFrame approach
+    // Use the requestAnimationFrame approach
     startTimeUpdates();
     
     // Set up visibility change listeners for background/foreground transitions
@@ -1198,7 +1186,7 @@ function startTimeUpdates() {
             updateLocationBasedTime();
         }
         
-        // Request next frame
+        // ALWAYS request next frame to ensure continuous updates
         frameRequested = false;
         requestTimeUpdate();
     }
@@ -1211,17 +1199,28 @@ function startTimeUpdates() {
         }
     }
     
-    // Also set a traditional interval as a fallback
+    // Set a more robust interval as backup - run every 500ms instead of every 1000ms
     // This helps when the tab is inactive but still needs to update
     locationTimeInterval = setInterval(() => {
-        const now = Date.now();
-        const delta = now - lastTimestamp;
-        
-        if (delta >= 1000 && !frameRequested) {
-            lastTimestamp = now - (delta % 1000);
-            updateLocationBasedTime();
+        if (document.visibilityState === 'hidden') {
+            // If tab is hidden, directly increment time
+            if (locationTime) {
+                locationTime.setSeconds(locationTime.getSeconds() + 1);
+                timeOffset = 0; // Reset offset since we've used it
+            }
+        } else {
+            const now = Date.now();
+            const delta = now - lastTimestamp;
+            
+            if (delta >= 1000 && !frameRequested) {
+                lastTimestamp = now - (delta % 1000);
+                updateLocationBasedTime();
+                
+                // Ensure animation frame is requested
+                requestTimeUpdate();
+            }
         }
-    }, 1000);
+    }, 500); // Check twice per second for better reliability
     
     // Start the loop
     requestTimeUpdate();
@@ -1254,7 +1253,7 @@ function updateLocationBasedTime(forceUpdate = false) {
     document.getElementById('current-time').textContent = timeString;
     document.getElementById('current-date').textContent = dateString;
     
-    // Only update prayer window if it's a forced update or on a 60-second interval
+    // Update prayer window on each minute change
     if (forceUpdate || locationTime.getSeconds() === 0) {
         updatePrayerWindowDisplay();
     }
