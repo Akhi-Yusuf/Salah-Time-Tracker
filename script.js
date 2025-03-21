@@ -987,6 +987,10 @@ function showChangesPendingNotification() {
     }
 }
 
+// Variables for improved time tracking
+let lastTimestamp = 0;
+let timeOffset = 0;
+
 // Fetch the current time from TimeAPI.io
 function fetchCurrentTime() {
     // Clear any existing interval to prevent multiple updaters
@@ -1036,6 +1040,10 @@ function fetchCurrentTime() {
                         );
                     }
                     
+                    // Save initial timestamp for drift correction
+                    lastTimestamp = Date.now();
+                    timeOffset = 0;
+                    
                     // Update UI with this time
                     updateLocationBasedTime();
                     
@@ -1044,8 +1052,11 @@ function fetchCurrentTime() {
                         clearInterval(locationTimeInterval);
                     }
                     
-                    // Set up interval to update this time locally (every second)
-                    locationTimeInterval = setInterval(updateLocationBasedTime, 1000);
+                    // Start the requestAnimationFrame-based time update
+                    startTimeUpdates();
+                    
+                    // Set up visibility change listeners for background/foreground transitions
+                    setupVisibilityListeners();
                     
                     // Update prayer window with the location time
                     updatePrayerWindowDisplay();
@@ -1086,52 +1097,149 @@ function fallbackToLocalTime() {
         timeBox.appendChild(noteElement);
     }
     
-    // Still use local incrementing
+    // Still use local incrementing but with better background handling
     locationTime = new Date();
+    
+    // Save initial timestamp for drift correction
+    lastTimestamp = Date.now();
+    timeOffset = 0;
     
     // IMPORTANT FIX: Ensure old intervals are cleared before creating a new one
     if (locationTimeInterval) {
         clearInterval(locationTimeInterval);
+        locationTimeInterval = null;
     }
     
-    locationTimeInterval = setInterval(updateLocationBasedTime, 1000);
+    // Use the new requestAnimationFrame approach
+    startTimeUpdates();
+    
+    // Set up visibility change listeners for background/foreground transitions
+    setupVisibilityListeners();
 }
 
-// Convert month name to month number (0-11)
-function getMonthNumber(monthName) {
-    // Guard against undefined or null
-    if (!monthName) return 0;
+// New function to handle visibility changes (tab switching, app switching)
+function setupVisibilityListeners() {
+    // Remove any existing listeners first to avoid duplicates
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
-    // Make more robust by checking different formats
-    const monthNameLower = monthName.toLowerCase();
+    // Also handle page show/hide events which can be useful on some mobile browsers
+    window.removeEventListener('pageshow', handlePageShow);
+    window.addEventListener('pageshow', handlePageShow);
     
-    const months = ["january", "february", "march", "april", "may", "june",
-                    "july", "august", "september", "october", "november", "december"];
-                    
-    // Check for full month name
-    const index = months.findIndex(month => month === monthNameLower);
-    if (index !== -1) return index;
+    // For desktop browsers, handle focus/blur
+    window.removeEventListener('focus', handleFocus);
+    window.addEventListener('focus', handleFocus);
+}
+
+// Handler for visibility change
+function handleVisibilityChange() {
+    if (document.visibilityState === 'visible') {
+        console.log("App became visible - updating time");
+        correctTimeOnResume();
+    }
+}
+
+// Handler for page show event
+function handlePageShow() {
+    console.log("Page shown - updating time");
+    correctTimeOnResume();
+}
+
+// Handler for window focus event
+function handleFocus() {
+    console.log("Window focused - updating time");
+    correctTimeOnResume();
+}
+
+// Correct the time when resuming from background
+function correctTimeOnResume() {
+    if (!locationTime) return;
     
-    // Check for abbreviated month name (first 3 letters)
-    const abbrevIndex = months.findIndex(month => month.substring(0, 3) === monthNameLower.substring(0, 3));
-    if (abbrevIndex !== -1) return abbrevIndex;
+    // Calculate how many milliseconds have passed since we last updated the time
+    const now = Date.now();
+    const elapsed = now - lastTimestamp;
+    lastTimestamp = now;
     
-    // If all else fails, try to parse as a number (0-indexed)
-    const parsed = parseInt(monthName);
-    if (!isNaN(parsed) && parsed >= 1 && parsed <= 12) {
-        return parsed - 1;
+    if (elapsed > 1000) { // Only adjust if more than a second has passed
+        // Add the elapsed time to our time object
+        timeOffset += elapsed;
+        
+        // Update the displayed time immediately
+        updateLocationBasedTime(true);
+        
+        // Also update prayer window
+        updatePrayerWindowDisplay();
+    }
+}
+
+// Start using requestAnimationFrame for smoother time updates
+function startTimeUpdates() {
+    // If we have an existing interval, clear it
+    if (locationTimeInterval) {
+        clearInterval(locationTimeInterval);
+        locationTimeInterval = null;
     }
     
-    // Default to current month if we can't determine
-    return new Date().getMonth();
+    // Set the last timestamp to now
+    lastTimestamp = Date.now();
+    
+    // Use a flag to track if animation frame is already requested
+    let frameRequested = false;
+    
+    // Handler function for the animation frame
+    function timeUpdateLoop() {
+        const now = Date.now();
+        const delta = now - lastTimestamp;
+        
+        // Only update if enough time has passed (about 1 second)
+        if (delta >= 1000) {
+            lastTimestamp = now - (delta % 1000); // Adjust for next update
+            updateLocationBasedTime();
+        }
+        
+        // Request next frame
+        frameRequested = false;
+        requestTimeUpdate();
+    }
+    
+    // Function to request the next frame
+    function requestTimeUpdate() {
+        if (!frameRequested) {
+            frameRequested = true;
+            requestAnimationFrame(timeUpdateLoop);
+        }
+    }
+    
+    // Also set a traditional interval as a fallback
+    // This helps when the tab is inactive but still needs to update
+    locationTimeInterval = setInterval(() => {
+        const now = Date.now();
+        const delta = now - lastTimestamp;
+        
+        if (delta >= 1000 && !frameRequested) {
+            lastTimestamp = now - (delta % 1000);
+            updateLocationBasedTime();
+        }
+    }, 1000);
+    
+    // Start the loop
+    requestTimeUpdate();
 }
 
 // Update the time based on the stored location time
-function updateLocationBasedTime() {
+function updateLocationBasedTime(forceUpdate = false) {
     if (!locationTime) return;
     
-    // Increment the stored time by 1 second
-    locationTime.setSeconds(locationTime.getSeconds() + 1);
+    // Calculate new time based on elapsed time since the last API call
+    if (forceUpdate || timeOffset >= 1000) {
+        // Add the accumulated time offset (in milliseconds)
+        locationTime.setTime(locationTime.getTime() + timeOffset);
+        timeOffset = 0;
+    } else {
+        // Normal update - increment by 1 second
+        locationTime.setSeconds(locationTime.getSeconds() + 1);
+    }
     
     // Format the time and date strings
     const timeString = locationTime.toLocaleTimeString();
@@ -1146,32 +1254,9 @@ function updateLocationBasedTime() {
     document.getElementById('current-time').textContent = timeString;
     document.getElementById('current-date').textContent = dateString;
     
-    // Check if we need to update the prayer window
-    updatePrayerWindowDisplay();
-}
-
-// Update the prayer window display using location time
-function updatePrayerWindowDisplay() {
-    if (!locationTime || !window.prayerTimesData) return;
-    
-    const prayerTimesGrid = document.getElementById('prayer-times-grid');
-    if (!prayerTimesGrid) return;
-    
-    const timingsStr = prayerTimesGrid.dataset.timings;
-    if (!timingsStr) return;
-    
-    try {
-        const timings = JSON.parse(timingsStr);
-        const currentHour = locationTime.getHours();
-        const currentMinute = locationTime.getMinutes();
-        const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
-        
-        console.log("Updating prayer window with location time:", currentTimeStr);
-        
-        const dummyData = { timings: timings };
-        displayPrayerTimes(dummyData, currentTimeStr);
-    } catch (e) {
-        console.error('Error updating prayer window:', e);
+    // Only update prayer window if it's a forced update or on a 60-second interval
+    if (forceUpdate || locationTime.getSeconds() === 0) {
+        updatePrayerWindowDisplay();
     }
 }
 
@@ -1773,6 +1858,11 @@ window.addEventListener('beforeunload', function() {
         clearInterval(locationTimeInterval);
         locationTimeInterval = null;
     }
+    
+    // Remove event listeners
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.removeEventListener('pageshow', handlePageShow);
+    window.removeEventListener('focus', handleFocus);
 });
 
 // Check if a time is between start and end times
