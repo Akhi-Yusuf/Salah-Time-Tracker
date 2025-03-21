@@ -20,9 +20,9 @@ const prayerDetails = {
 
 // Current settings
 let settings = {
-    calculationMethod: 2, // Default: ISNA
+    calculationMethod: 3, // Default: Muslim World League (changed from 2/ISNA)
     juristicSchool: 0,    // Default: Standard
-    latitudeMethod: 0,    // Default: Middle of Night
+    latitudeMethod: 2,    // Default: Angle-Based (changed from 0/Middle of Night)
     midnightMode: 0,      // Default: Standard
     tune: {
         imsak: 0,
