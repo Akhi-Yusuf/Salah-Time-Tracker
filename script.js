@@ -991,6 +991,9 @@ function showChangesPendingNotification() {
 let lastTimestamp = 0;
 let timeOffset = 0;
 
+// Add a variable to control time update frequency
+let lastSecondUpdated = -1;
+
 // Fetch the current time from TimeAPI.io
 function fetchCurrentTime() {
     // Clear any existing interval to prevent multiple updaters
@@ -1161,101 +1164,93 @@ function correctTimeOnResume() {
     }
 }
 
-// Start using requestAnimationFrame for smoother time updates
+// Start using a more stable time update approach
 function startTimeUpdates() {
-    // If we have an existing interval, clear it
+    // Clear any existing intervals
     if (locationTimeInterval) {
         clearInterval(locationTimeInterval);
         locationTimeInterval = null;
     }
     
-    // Set the last timestamp to now
+    // Reset our tracking variables
     lastTimestamp = Date.now();
+    timeOffset = 0;
+    lastSecondUpdated = -1;
     
-    // Use a flag to track if animation frame is already requested
-    let frameRequested = false;
-    
-    // Handler function for the animation frame
-    function timeUpdateLoop() {
-        const now = Date.now();
-        const delta = now - lastTimestamp;
-        
-        // Only update if enough time has passed (about 1 second)
-        if (delta >= 1000) {
-            lastTimestamp = now - (delta % 1000); // Adjust for next update
-            updateLocationBasedTime();
-        }
-        
-        // ALWAYS request next frame to ensure continuous updates
-        frameRequested = false;
-        requestTimeUpdate();
-    }
-    
-    // Function to request the next frame
-    function requestTimeUpdate() {
-        if (!frameRequested) {
-            frameRequested = true;
-            requestAnimationFrame(timeUpdateLoop);
-        }
-    }
-    
-    // Set a more robust interval as backup - run every 500ms instead of every 1000ms
-    // This helps when the tab is inactive but still needs to update
+    // Use a simpler approach with just setInterval
+    // This runs every 250ms to check if we need to update, but only updates once per second
     locationTimeInterval = setInterval(() => {
-        if (document.visibilityState === 'hidden') {
-            // If tab is hidden, directly increment time
-            if (locationTime) {
-                locationTime.setSeconds(locationTime.getSeconds() + 1);
-                timeOffset = 0; // Reset offset since we've used it
-            }
-        } else {
-            const now = Date.now();
-            const delta = now - lastTimestamp;
+        const now = Date.now();
+        
+        // Calculate how many full seconds have passed
+        const secondsElapsed = Math.floor((now - lastTimestamp) / 1000);
+        
+        if (secondsElapsed > 0) {
+            // Update lastTimestamp to account for the seconds we're processing
+            // We keep the precise milliseconds to avoid drift
+            lastTimestamp += secondsElapsed * 1000;
             
-            if (delta >= 1000 && !frameRequested) {
-                lastTimestamp = now - (delta % 1000);
-                updateLocationBasedTime();
-                
-                // Ensure animation frame is requested
-                requestTimeUpdate();
+            // If in background, just increment the internal time
+            if (document.visibilityState === 'hidden') {
+                if (locationTime) {
+                    locationTime.setSeconds(locationTime.getSeconds() + secondsElapsed);
+                }
+            } else {
+                // When visible, update the UI too
+                timeOffset += secondsElapsed * 1000;
+                updateLocationBasedTime(secondsElapsed > 1); // Force update if we missed multiple seconds
             }
         }
-    }, 500); // Check twice per second for better reliability
+    }, 250);
     
-    // Start the loop
-    requestTimeUpdate();
+    // Also listen for visibility changes to handle background-to-foreground transitions
+    setupVisibilityListeners();
 }
 
 // Update the time based on the stored location time
 function updateLocationBasedTime(forceUpdate = false) {
     if (!locationTime) return;
     
-    // Calculate new time based on elapsed time since the last API call
-    if (forceUpdate || timeOffset >= 1000) {
-        // Add the accumulated time offset (in milliseconds)
-        locationTime.setTime(locationTime.getTime() + timeOffset);
-        timeOffset = 0;
-    } else {
-        // Normal update - increment by 1 second
-        locationTime.setSeconds(locationTime.getSeconds() + 1);
+    // Make a backup of the old time for debugging
+    const oldSeconds = locationTime.getSeconds();
+    const oldMinutes = locationTime.getMinutes();
+    
+    if (timeOffset >= 1000) {
+        // Add full seconds, not just increment by 1
+        const secondsToAdd = Math.floor(timeOffset / 1000);
+        locationTime.setSeconds(locationTime.getSeconds() + secondsToAdd);
+        timeOffset -= secondsToAdd * 1000;
     }
     
-    // Format the time and date strings
-    const timeString = locationTime.toLocaleTimeString();
-    const dateString = locationTime.toLocaleDateString(undefined, { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-    });
+    // Get the current second to prevent updating the same second twice
+    const currentSecond = locationTime.getSeconds();
     
-    // Update the UI
-    document.getElementById('current-time').textContent = timeString;
-    document.getElementById('current-date').textContent = dateString;
-    
-    // Update prayer window on each minute change
-    if (forceUpdate || locationTime.getSeconds() === 0) {
-        updatePrayerWindowDisplay();
+    // Only update if the second has changed or we're forcing an update
+    if (forceUpdate || currentSecond !== lastSecondUpdated) {
+        lastSecondUpdated = currentSecond;
+        
+        // Format the time and date strings
+        const timeString = locationTime.toLocaleTimeString();
+        const dateString = locationTime.toLocaleDateString(undefined, { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        
+        // Update the UI
+        document.getElementById('current-time').textContent = timeString;
+        document.getElementById('current-date').textContent = dateString;
+        
+        // Log time transitions around minute boundaries for debugging
+        if (oldSeconds > 50 && currentSecond < 10) {
+            console.log(`Minute boundary crossed: ${oldMinutes}:${oldSeconds} -> ${locationTime.getMinutes()}:${currentSecond}`);
+        }
+        
+        // Update prayer window info at minute changes or if forced
+        if (forceUpdate || (oldSeconds > 55 && currentSecond < 5)) {
+            updatePrayerWindowDisplay();
+        }
     }
 }
 
