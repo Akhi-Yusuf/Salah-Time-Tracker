@@ -1511,7 +1511,8 @@ function showLocationPrompt() {
     
     // Set up event listeners for the prompt
     document.getElementById('prompt-geolocation').addEventListener('click', function() {
-        getCurrentLocation();
+        // This button needs to use a special version of getCurrentLocation that updates immediately
+        getLocationAndUpdate();
         document.getElementById('location-prompt').remove();
     });
     
@@ -1613,6 +1614,118 @@ function showLocationPrompt() {
             suggestionsContainer.classList.add('hidden');
         }
     });
+}
+
+// New function - Get current location and apply immediately for first time setup
+function getLocationAndUpdate() {
+    if (navigator.geolocation) {
+        // Show a temporary loading message
+        showTemporaryMessage('Detecting your location...');
+        
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                
+                // Get location name and update immediately (instead of using tempLocation)
+                const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+                
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        const address = data.address;
+                        
+                        // Try to get the most specific location name available
+                        const city = address.city || address.town || address.village || address.hamlet || 
+                                    address.suburb || address.county || address.state_district || 
+                                    address.state || data.name || "Location";
+                        
+                        const country = address.country || "";
+                        
+                        // Log address data for debugging
+                        console.log("Address data:", address);
+                        
+                        // Directly update user location instead of using tempLocation
+                        userLocation = {
+                            city: city,
+                            country: country,
+                            latitude: lat,
+                            longitude: lon
+                        };
+                        
+                        // Save to localStorage
+                        localStorage.setItem('userLocation', JSON.stringify(userLocation));
+                        
+                        // Update the interface
+                        updateLocationDisplay();
+                        fetchPrayerTimes();
+                        fetchCurrentTime();
+                        
+                        showTemporaryMessage('Location updated!', 'success');
+                    })
+                    .catch(error => {
+                        console.error('Reverse Geocoding Error:', error);
+                        
+                        // Use coordinates as location name when geocoding fails
+                        userLocation = {
+                            city: `Location (${lat.toFixed(4)}, ${lon.toFixed(4)})`,
+                            country: '',
+                            latitude: lat,
+                            longitude: lon
+                        };
+                        
+                        // Save to localStorage
+                        localStorage.setItem('userLocation', JSON.stringify(userLocation));
+                        
+                        // Update the interface
+                        updateLocationDisplay();
+                        fetchPrayerTimes();
+                        fetchCurrentTime();
+                        
+                        showTemporaryMessage('Location coordinates saved!', 'success');
+                    });
+            },
+            function(error) {
+                console.error('Geolocation Error:', error);
+                showError('Unable to retrieve your location. Please enter it manually.');
+            }
+        );
+    } else {
+        showError('Geolocation is not supported by your browser. Please enter your location manually.');
+    }
+}
+
+// Show a temporary message (reuse error message element but with different styling)
+function showTemporaryMessage(message, type = 'info') {
+    // Create message element if it doesn't exist
+    let messageElement = document.getElementById('temp-message');
+    
+    if (!messageElement) {
+        messageElement = document.createElement('div');
+        messageElement.id = 'temp-message';
+        messageElement.className = 'fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 transition-opacity';
+        document.body.appendChild(messageElement);
+    }
+    
+    // Set color based on message type
+    if (type === 'success') {
+        messageElement.className = 'fixed top-4 right-4 bg-green-600 text-white p-4 rounded-md shadow-lg z-50 transition-opacity';
+    } else if (type === 'info') {
+        messageElement.className = 'fixed top-4 right-4 bg-blue-600 text-white p-4 rounded-md shadow-lg z-50 transition-opacity';
+    }
+    
+    // Set message and show
+    messageElement.textContent = message;
+    messageElement.style.display = 'block';
+    messageElement.style.opacity = '1';
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+        messageElement.style.opacity = '0';
+        setTimeout(() => {
+            messageElement.style.display = 'none';
+        }, 300);
+    }, 3000);
 }
 
 // Search for a location from the prompt
