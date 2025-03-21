@@ -217,7 +217,7 @@ function displayPrayerTimes(data, customCurrentTime = null) {
             
             windowDisplay.innerHTML = `
                 <div class="text-center">
-                    <h3 class="text-gold text-lg font-medium mb-1">Current Salah Window</h3>
+                    <h3 class="text-gold text-lg font-medium mb-1">Time To Pray</h3>
                     <div class="text-3xl font-bold mb-2">${prayer}</div>
                     <div class="text-gray-300">
                         ${formatTime(startTime)} - ${formatTime(endTime)}
@@ -253,7 +253,7 @@ function displayPrayerTimes(data, customCurrentTime = null) {
             
             windowDisplay.innerHTML = `
                 <div class="text-center">
-                    <h3 class="text-gold text-lg font-medium mb-1">Next Salah Window</h3>
+                    <h3 class="text-gold text-lg font-medium mb-1">Next Salah</h3>
                     <div class="text-3xl font-bold mb-2">${nextPrayer}</div>
                     <div class="text-gray-300">
                         at ${formatTime(nextTime)}
