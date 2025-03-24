@@ -242,7 +242,7 @@ function displayPrayerTimes(data, customCurrentTime = null) {
         } else {
             // We're between salah windows, show next salah
             const nextPrayer = currentPrayer.next || 'Fajr';
-            const nextTime = timings[nextPrayer];
+            const nextTime = currentPrayer.nextTime || timings[nextPrayer];
             const periodStartTime = currentPrayer.periodStart || timings.Fajr;
             
             // Updated to match current salah window styling
@@ -251,28 +251,55 @@ function displayPrayerTimes(data, customCurrentTime = null) {
             // Calculate progress
             const progressPercent = calculateProgress(currentTimeStr, periodStartTime, nextTime);
             
-            windowDisplay.innerHTML = `
-                <div class="text-center">
-                    <h3 class="text-gold text-lg font-medium mb-1">Next Salah</h3>
-                    <div class="text-3xl font-bold mb-2">${nextPrayer}</div>
-                    <div class="text-gray-300">
-                        at ${formatTime(nextTime)}
+            // Check if this is the Tahajjud period
+            if (currentPrayer.special === "tahajjud") {
+                windowDisplay.innerHTML = `
+                    <div class="text-center">
+                        <h3 class="text-gold text-lg font-medium mb-1">Last Third of Night</h3>
+                        <div class="text-3xl font-bold mb-2">Tahajjud Time</div>
+                        <div class="text-gray-300">
+                            Best time for Tahajjud Prayer
+                        </div>
+                        <div class="text-xs text-gray-400 mt-2">
+                            Next: Fajr at ${formatTime(nextTime)}
+                        </div>
                     </div>
-                    <div class="text-xs text-gray-400 mt-2">
-                        ${prayerDetails[nextPrayer.toLowerCase()]?.fard || '-'} Fard
+                    
+                    <div class="my-4">
+                        <div class="w-full bg-gray-700 rounded-full h-3 mb-2">
+                            <div class="bg-gold h-3 rounded-full" style="width: ${progressPercent}%"></div>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-400">Time until Fajr</span>
+                            <span class="text-gold font-medium">${formatTimeRemaining(currentTimeStr, nextTime)}</span>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="my-4">
-                    <div class="w-full bg-gray-700 rounded-full h-3 mb-2">
-                        <div class="bg-gold h-3 rounded-full" style="width: ${progressPercent}%"></div>
+                `;
+            } else {
+                // Regular "Next Salah" display (for after Isha, Early Night, etc.)
+                windowDisplay.innerHTML = `
+                    <div class="text-center">
+                        <h3 class="text-gold text-lg font-medium mb-1">Next Salah</h3>
+                        <div class="text-3xl font-bold mb-2">${nextPrayer}</div>
+                        <div class="text-gray-300">
+                            at ${formatTime(nextTime)}
+                        </div>
+                        <div class="text-xs text-gray-400 mt-2">
+                            ${prayerDetails[nextPrayer.toLowerCase()]?.fard || '-'} Fard
+                        </div>
                     </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-400">Time remaining</span>
-                        <span class="text-gold font-medium">${formatTimeRemaining(currentTimeStr, nextTime)}</span>
+                    
+                    <div class="my-4">
+                        <div class="w-full bg-gray-700 rounded-full h-3 mb-2">
+                            <div class="bg-gold h-3 rounded-full" style="width: ${progressPercent}%"></div>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-400">Time remaining</span>
+                            <span class="text-gold font-medium">${formatTimeRemaining(currentTimeStr, nextTime)}</span>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         }
         
         prayerTimesGrid.appendChild(windowDisplay);
@@ -300,10 +327,13 @@ function displayPrayerTimes(data, customCurrentTime = null) {
     }
 }
 
-// Determine current prayer window or next prayer with more detailed info
+// Update determineCurrentPrayer to include Tahajjud period
 function determineCurrentPrayer(timings, currentTimeStr) {
     console.log("Prayer timings:", timings);
     console.log("Current time:", currentTimeStr);
+    
+    // Calculate Tahajjud time
+    const tahajjudTime = calculateTahajjudTime(timings);
     
     // Define prayer windows and their boundaries
     const prayerWindows = [
@@ -340,17 +370,26 @@ function determineCurrentPrayer(timings, currentTimeStr) {
             start: timings.Isha,
             end: timings.Midnight,
             endName: "Midnight",
-            nextPrayer: "Fajr"
+            nextPrayer: "Tahajjud" // Changed from Fajr to Tahajjud
         }
     ];
     
     // Define periods between prayers
     const betweenPeriods = [
         {
-            name: "Night",
+            name: "Early Night",
             start: timings.Midnight,
+            end: tahajjudTime,
+            nextPrayer: "Fajr",           // CHANGED FROM "Tahajjud" to "Fajr"
+            nextTime: timings.Fajr        // Use Fajr time directly
+        },
+        {
+            name: "Tahajjud",
+            start: tahajjudTime,
             end: timings.Fajr,
-            nextPrayer: "Fajr"
+            nextPrayer: "Fajr",
+            nextTime: timings.Fajr,  // Add this property
+            special: "tahajjud"
         },
         {
             name: "After Fajr",
@@ -380,7 +419,8 @@ function determineCurrentPrayer(timings, currentTimeStr) {
             name: "After Isha",
             start: timings.Isha,
             end: timings.Midnight,
-            nextPrayer: "Fajr"
+            nextPrayer: "Fajr",           // CHANGED FROM "Tahajjud" to "Fajr"
+            nextTime: timings.Fajr        // Use Fajr time directly
         }
     ];
     
@@ -409,8 +449,10 @@ function determineCurrentPrayer(timings, currentTimeStr) {
             return {
                 active: false,
                 next: period.nextPrayer,
+                nextTime: period.nextTime, // Add this line
                 period: period.name,
-                periodStart: period.start
+                periodStart: period.start,
+                special: period.special
             };
         }
     }
@@ -639,7 +681,7 @@ function getNextPrayer(currentPrayer) {
     return prayerOrder[currentIndex + 1];
 }
 
-// Display additional times
+// Update the displayAdditionalTimes function to include Tahajjud
 function displayAdditionalTimes(data) {
     const additionalTimesContainer = document.getElementById('additional-times');
     const timings = data.timings;
@@ -647,8 +689,12 @@ function displayAdditionalTimes(data) {
     // Clear previous content
     additionalTimesContainer.innerHTML = '';
     
+    // Calculate Tahajjud time
+    const tahajjudTime = calculateTahajjudTime(timings);
+    
     // Additional times to display
     const additionalTimes = [
+        { name: 'Tahajjud', key: 'Tahajjud', time: tahajjudTime, description: 'Last third of night' },
         { name: 'Imsak', key: 'Imsak' },
         { name: 'Sunrise', key: 'Sunrise' },
         { name: 'Sunset', key: 'Sunset' },
@@ -656,25 +702,33 @@ function displayAdditionalTimes(data) {
     ];
     
     additionalTimes.forEach(item => {
-        const time = timings[item.key]; // Use time directly from API - it already has adjustments
+        // Use calculated time for Tahajjud, API time for others
+        const time = item.time || timings[item.key];
+        if (!time) return; // Skip if time is not available
+        
         const formattedTime = formatTime(time);
         
         const listItem = document.createElement('li');
         listItem.className = 'flex justify-between items-center p-2 bg-gray-700/50 rounded';
         
         listItem.innerHTML = `
-            <span class="text-gray-300">${item.name}</span>
+            <div>
+                <span class="text-gray-300">${item.name}</span>
+                ${item.description ? `<div class="text-xs text-gray-400">${item.description}</div>` : ''}
+            </div>
             <span class="font-medium">${formattedTime}</span>
         `;
         
-        // Add a small indicator if time was adjusted
-        const keyLower = item.key.toLowerCase();
-        const tuneAmount = settings.tune[keyLower] || 0;
-        if (tuneAmount !== 0) {
-            const indicator = document.createElement('span');
-            indicator.className = 'text-xs text-yellow-400 ml-2';
-            indicator.textContent = tuneAmount > 0 ? `+${tuneAmount}m` : `${tuneAmount}m`;
-            listItem.querySelector('span:last-child').appendChild(indicator);
+        // Add a small indicator if time was adjusted (except for Tahajjud)
+        if (item.key !== 'Tahajjud') {
+            const keyLower = item.key.toLowerCase();
+            const tuneAmount = settings.tune[keyLower] || 0;
+            if (tuneAmount !== 0) {
+                const indicator = document.createElement('span');
+                indicator.className = 'text-xs text-yellow-400 ml-2';
+                indicator.textContent = tuneAmount > 0 ? `+${tuneAmount}m` : `${tuneAmount}m`;
+                listItem.querySelector('span:last-child').appendChild(indicator);
+            }
         }
         
         additionalTimesContainer.appendChild(listItem);
@@ -1006,15 +1060,15 @@ function fetchCurrentTime() {
     document.getElementById('current-time').textContent = "Loading...";
     document.getElementById('current-date').textContent = "Fetching time for location...";
     
+    // Primary API - TimeAPI.io
     const timeApiUrl = `https://timeapi.io/api/Time/current/coordinate?latitude=${userLocation.latitude}&longitude=${userLocation.longitude}`;
     
     fetch(timeApiUrl)
         .then(response => response.json())
         .then(data => {
             if (data) {
-                console.log("TimeAPI response:", data); // Log to see what we're getting
+                console.log("TimeAPI response:", data);
                 
-                // Create date from API response - use safer approach
                 try {
                     // Use the dateTime property directly if available (ISO format)
                     if (data.dateTime) {
@@ -1022,14 +1076,11 @@ function fetchCurrentTime() {
                     } 
                     // Fallback to building the date from components
                     else {
-                        // Fixed: handle cases where monthText might be undefined
                         let month = 0; // Default to January
                         
                         if (data.month !== undefined) {
-                            // If month number is available, use it (0-indexed)
                             month = parseInt(data.month) - 1;
                         } else if (data.monthText) {
-                            // If month text is available, convert it
                             month = getMonthNumber(data.monthText);
                         }
                         
@@ -1050,31 +1101,119 @@ function fetchCurrentTime() {
                     // Update UI with this time
                     updateLocationBasedTime();
                     
-                    // IMPORTANT FIX: Ensure old intervals are cleared before creating a new one
                     if (locationTimeInterval) {
                         clearInterval(locationTimeInterval);
                     }
                     
-                    // Start the requestAnimationFrame-based time update
                     startTimeUpdates();
-                    
-                    // Set up visibility change listeners for background/foreground transitions
                     setupVisibilityListeners();
-                    
-                    // Update prayer window with the location time
                     updatePrayerWindowDisplay();
                 } catch (error) {
                     console.error("Error parsing time data:", error);
-                    fallbackToLocalTime();
+                    fetchTimeFromBackupAPI();
                 }
             } else {
-                fallbackToLocalTime();
+                fetchTimeFromBackupAPI();
             }
         })
         .catch(error => {
             console.error('Time API Error:', error);
-            fallbackToLocalTime();
+            fetchTimeFromBackupAPI();
         });
+}
+
+// New function to handle backup time API request
+function fetchTimeFromBackupAPI() {
+    // Use WorldTimeAPI as a backup
+    const backupApiUrl = `https://worldtimeapi.org/api/timezone/Etc/GMT${getInvertedGMTOffset()}`;
+    
+    fetch(backupApiUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.datetime) {
+                console.log("Backup API response:", data);
+                locationTime = new Date(data.datetime);
+                
+                // Save initial timestamp for drift correction
+                lastTimestamp = Date.now();
+                timeOffset = 0;
+                
+                updateLocationBasedTime();
+                
+                if (locationTimeInterval) {
+                    clearInterval(locationTimeInterval);
+                }
+                
+                startTimeUpdates();
+                setupVisibilityListeners();
+                updatePrayerWindowDisplay();
+            } else {
+                estimateLocationTime();
+            }
+        })
+        .catch(error => {
+            console.error('Backup Time API Error:', error);
+            estimateLocationTime();
+        });
+}
+
+// Estimate location time based on longitude when both APIs fail
+function estimateLocationTime() {
+    console.log("Estimating time based on longitude...");
+    
+    // Get the user's current local time
+    const now = new Date();
+    
+    // Estimate timezone offset based on longitude
+    // Approximate timezone by dividing longitude by 15 (15 degrees per timezone)
+    const estimatedOffset = Math.round(userLocation.longitude / 15);
+    
+    // Get user's local offset in hours
+    const localOffset = -now.getTimezoneOffset() / 60;
+    
+    // Calculate difference between local and estimated timezone
+    const offsetDiff = estimatedOffset - localOffset;
+    
+    // Apply the offset difference to get the estimated time
+    const estimatedTime = new Date(now.getTime() + (offsetDiff * 60 * 60 * 1000));
+    
+    console.log(`Estimated timezone offset: ${estimatedOffset}h, Local offset: ${localOffset}h, Diff: ${offsetDiff}h`);
+    console.log(`Estimated time for ${userLocation.city}: ${estimatedTime.toISOString()}`);
+    
+    locationTime = estimatedTime;
+    
+    // Save initial timestamp for drift correction
+    lastTimestamp = Date.now();
+    timeOffset = 0;
+    
+    updateLocationBasedTime();
+    
+    if (locationTimeInterval) {
+        clearInterval(locationTimeInterval);
+        locationTimeInterval = null;
+    }
+    
+    startTimeUpdates();
+    setupVisibilityListeners();
+    updatePrayerWindowDisplay();
+}
+
+// Helper function to get the inverted GMT offset for WorldTimeAPI
+function getInvertedGMTOffset() {
+    // Estimate timezone offset based on longitude (15 degrees per timezone)
+    const estimatedOffset = Math.round(userLocation.longitude / 15);
+    
+    // WorldTimeAPI uses an inverted format where positive is negative and vice versa
+    return estimatedOffset > 0 ? `-${estimatedOffset}` : `+${Math.abs(estimatedOffset)}`;
+}
+
+// Add this helper function to convert month names to numbers
+function getMonthNumber(monthName) {
+    const months = {
+        'january': 0, 'february': 1, 'march': 2, 'april': 3, 'may': 4, 'june': 5,
+        'july': 6, 'august': 7, 'september': 8, 'october': 9, 'november': 10, 'december': 11
+    };
+    return months[monthName.toLowerCase()] || 0;
 }
 
 // Fallback to using local time with timezone adjustment
@@ -1447,6 +1586,18 @@ function setupEventListeners() {
             }
         });
     }
+    
+    // Add this to debug your buttons
+    console.log("Setting up event listeners...");
+    document.getElementById('openSettings').addEventListener('click', function() {
+        console.log("Settings button clicked");
+        openSettingsPanel();
+    });
+
+    document.getElementById('themeToggle').addEventListener('change', function() {
+        console.log("Theme toggle changed");
+        // Theme toggle code...
+    });
 }
 
 // Open settings panel
@@ -1454,19 +1605,19 @@ function openSettingsPanel() {
     const panel = document.getElementById('settingsPanel');
     const backdrop = document.getElementById('settingsBackdrop');
     
-    // Make sure location field has current location
-    document.getElementById('locationSearch').value = `${userLocation.city}, ${userLocation.country}`;
+    // Show backdrop
+    backdrop.style.display = 'block';
+    setTimeout(() => {
+        backdrop.classList.add('open');
+    }, 10);
     
-    // Show backdrop first
-    backdrop.classList.add('open');
-    
-    // Small delay before sliding in panel for smooth animation
+    // Slide in panel
     setTimeout(() => {
         panel.classList.add('open');
     }, 50);
     
-    // Prevent scrolling on the main body
-    document.body.style.overflow = 'hidden';
+    // Keep scrolling enabled but prevent interactions with main content
+    document.body.style.overflow = 'auto';
 }
 
 // Close settings panel
@@ -1474,20 +1625,14 @@ function closeSettingsPanel() {
     const panel = document.getElementById('settingsPanel');
     const backdrop = document.getElementById('settingsBackdrop');
     
-    // First slide the panel out
+    // Slide the panel out
     panel.classList.remove('open');
     
-    // After the panel slides out, hide the backdrop
+    // Hide backdrop
+    backdrop.classList.remove('open');
     setTimeout(() => {
-        backdrop.classList.remove('open');
-        // Small delay to let the opacity transition finish
-        setTimeout(() => {
-            backdrop.style.display = 'none';
-        }, 300);
-    }, 250);
-    
-    // Re-enable scrolling
-    document.body.style.overflow = '';
+        backdrop.style.display = 'none';
+    }, 300);
 }
 
 // Get initial data (location and prayer times)
@@ -1548,10 +1693,16 @@ function initializeTheme() {
     const savedTheme = localStorage.getItem('theme');
     const themeToggle = document.getElementById('themeToggle');
     
-    if (savedTheme === 'light') {
+    const isLightTheme = savedTheme === 'light';
+    
+    if (isLightTheme) {
+        document.documentElement.classList.add('light-theme');
         document.body.classList.add('light-theme');
         if (themeToggle) themeToggle.checked = true;
     }
+    
+    // Initialize scrollbar theme
+    updateScrollbarTheme(isLightTheme);
 }
 
 // Show location prompt to the user
@@ -1884,24 +2035,231 @@ function setupThemeToggle() {
     const themeToggle = document.getElementById('themeToggle');
     if (themeToggle) {
         themeToggle.addEventListener('change', function() {
-            if (this.checked) {
+            console.log("Theme toggle changed");
+            
+            // Save current scroll position
+            const scrollPosition = window.scrollY;
+            
+            const isLightTheme = this.checked;
+            
+            // Update theme classes
+            if (isLightTheme) {
+                document.documentElement.classList.add('light-theme');
                 document.body.classList.add('light-theme');
                 localStorage.setItem('theme', 'light');
+                
+                // Directly update the settings icon color for light theme
+                const settingsIcon = document.querySelector('#openSettings svg');
+                if (settingsIcon) settingsIcon.setAttribute('fill', '#755c11');
             } else {
+                document.documentElement.classList.remove('light-theme');
                 document.body.classList.remove('light-theme');
                 localStorage.setItem('theme', 'dark');
+                
+                // Directly update the settings icon color for dark theme
+                const settingsIcon = document.querySelector('#openSettings svg');
+                if (settingsIcon) settingsIcon.setAttribute('fill', '#d4af37');
             }
+            
+            // Force scrollbar theme update
+            updateScrollbarTheme(isLightTheme);
+            
+            // Remove the forced repaint that resets scroll position
+            // document.body.style.display = 'none';
+            // document.body.offsetHeight;
+            // document.body.style.display = '';
+            
+            // Restore scroll position
+            window.scrollTo(0, scrollPosition);
         });
     }
 }
 
-// Initialize the app - Add to your existing DOMContentLoaded event
+// Also update the initializeTheme function to set the initial icon color
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const themeToggle = document.getElementById('themeToggle');
+    
+    const isLightTheme = savedTheme === 'light';
+    
+    if (isLightTheme) {
+        document.documentElement.classList.add('light-theme');
+        document.body.classList.add('light-theme');
+        if (themeToggle) themeToggle.checked = true;
+        
+        // Set the initial icon color for light theme
+        const settingsIcon = document.querySelector('#openSettings svg');
+        if (settingsIcon) settingsIcon.setAttribute('fill', '#755c11');
+    } else {
+        // Set the initial icon color for dark theme
+        const settingsIcon = document.querySelector('#openSettings svg');
+        if (settingsIcon) settingsIcon.setAttribute('fill', '#d4af37');
+    }
+    
+    // Initialize scrollbar theme
+    updateScrollbarTheme(isLightTheme);
+}
+
+// Add a new function to force immediate update of icon color when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize theme - should be called before other UI code
-    initializeTheme();
+    // All other initialization code...
     
-    // Setup theme toggle
-    setupThemeToggle();
+    // Ensure settings icon has correct color
+    const isLightTheme = document.body.classList.contains('light-theme');
+    const settingsIcon = document.querySelector('#openSettings svg');
+    if (settingsIcon) {
+        settingsIcon.setAttribute('fill', isLightTheme ? '#755c11' : '#d4af37');
+    }
+});
+
+// Fix the syntax error by adding the required closing bracket
+// Check the end of your file and add:
+
+// When adding the last few functions, you likely forgot to close something
+function updatePrayerWindowDisplay() {
+    // Get current prayer window data
+    if (window.prayerTimesData && window.prayerTimesData.timings && locationTime) {
+        const currentHour = locationTime.getHours();
+        const currentMinute = locationTime.getMinutes();
+        const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+        
+        // Get the prayer times grid element
+        const prayerTimesGrid = document.getElementById('prayer-times-grid');
+        if (prayerTimesGrid) {
+            // Fix: Pass the correct data structure
+            displayPrayerTimes({timings: window.prayerTimesData.timings}, currentTimeStr);
+        }
+    }
+}
+
+// Add this function to your script.js file
+function updateScrollbarTheme(isLightTheme) {
+    // Create or get existing style element for scrollbar styles
+    let styleEl = document.getElementById('scrollbar-styles');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'scrollbar-styles';
+        document.head.appendChild(styleEl);
+    }
     
-    // ...existing initialization code...
+    // Set appropriate styles based on theme
+    if (isLightTheme) {
+        styleEl.textContent = `
+            ::-webkit-scrollbar { width: 10px; height: 10px; }
+            ::-webkit-scrollbar-track { background-color: #ffffff !important; }
+            ::-webkit-scrollbar-thumb { 
+                background-color: #8b6d14 !important; 
+                border-radius: 5px;
+                border: 2px solid #ffffff !important;
+            }
+            ::-webkit-scrollbar-corner { background-color: #ffffff !important; }
+            * { scrollbar-color: #8b6d14 #ffffff !important; }
+        `;
+    } else {
+        styleEl.textContent = `
+            ::-webkit-scrollbar { width: 10px; height: 10px; }
+            ::-webkit-scrollbar-track { background-color: #1f2937 !important; }
+            ::-webkit-scrollbar-thumb { 
+                background-color: #d4af37 !important; 
+                border-radius: 5px;
+                border: 2px solid #1f2937 !important;
+            }
+            ::-webkit-scrollbar-corner { background-color: #1f2937 !important; }
+            * { scrollbar-color: #d4af37 #1f2937 !important; }
+        `;
+    }
+}
+
+// Calculate Tahajjud time (last third of the night)
+function calculateTahajjudTime(timings) {
+    // If we don't have the necessary prayer times, return null
+    if (!timings || !timings.Maghrib || !timings.Fajr) {
+        return null;
+    }
+    
+    // Convert times to minutes for easier calculation
+    const maghribMinutes = timeToMinutes(timings.Maghrib);
+    let fajrMinutes = timeToMinutes(timings.Fajr);
+    
+    // Handle day boundary (Fajr is on the next day)
+    if (fajrMinutes < maghribMinutes) {
+        fajrMinutes += 24 * 60; // Add 24 hours in minutes
+    }
+    
+    // Calculate night duration in minutes
+    const nightDuration = fajrMinutes - maghribMinutes;
+    
+    // Calculate when the last third begins (maghrib + 2/3 of night)
+    const lastThirdStart = maghribMinutes + Math.floor(nightDuration * (2/3));
+    
+    // Convert back to HH:MM format, handling day boundary
+    const adjustedMinutes = lastThirdStart % (24 * 60);
+    const hours = Math.floor(adjustedMinutes / 60);
+    const minutes = adjustedMinutes % 60;
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+}
+
+// Register Service Worker for PWA functionality
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(registration => {
+                console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    });
+}
+
+// PWA Installation logic
+let deferredPrompt;
+const installContainer = document.createElement('div');
+installContainer.className = 'fixed bottom-4 right-4 z-40 hidden';
+installContainer.innerHTML = `
+    <button id="installApp" class="px-4 py-2 bg-gold text-gray-900 rounded-md shadow-lg flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Install App
+    </button>
+`;
+document.body.appendChild(installContainer);
+
+// Listen for the beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent Chrome 67 and earlier from automatically showing the prompt
+    e.preventDefault();
+    // Stash the event so it can be triggered later
+    deferredPrompt = e;
+    // Show the install button
+    installContainer.classList.remove('hidden');
+});
+
+// Add click event after the container is added to the DOM
+document.getElementById('installApp').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+    
+    // Clear the saved prompt since it can't be used again
+    deferredPrompt = null;
+    
+    // Hide the install button
+    installContainer.classList.add('hidden');
+});
+
+// Listen for successful installation
+window.addEventListener('appinstalled', (evt) => {
+    // App was installed, log or show a message
+    console.log('Salah Times was installed to the home screen');
+    showTemporaryMessage('App installed successfully!', 'success');
+    // Hide the install button
+    installContainer.classList.add('hidden');
 });
