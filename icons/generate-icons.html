@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PWA Icon Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        canvas { display: none; }
+        #preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+        .preview-item { text-align: center; }
+        .preview-item img { border: 1px solid #ccc; }
+        button { padding: 10px 15px; background: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        button:hover { background: #45a049; }
+        input[type="file"] { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>PWA Icon Generator</h1>
+    <p>Upload a square image (at least 512x512 pixels) to generate all PWA icons:</p>
+    
+    <input type="file" id="image-input" accept="image/*">
+    <div id="preview-container"></div>
+    <button id="download-all" disabled>Download All Icons</button>
+    
+    <canvas id="canvas"></canvas>
+    
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const previewContainer = document.getElementById('preview-container');
+        const downloadButton = document.getElementById('download-all');
+        const imageInput = document.getElementById('image-input');
+        
+        let sourceImage = null;
+        
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    sourceImage = img;
+                    generatePreviews();
+                    downloadButton.disabled = false;
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        function generatePreviews() {
+            previewContainer.innerHTML = '';
+            
+            sizes.forEach(size => {
+                canvas.width = size;
+                canvas.height = size;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(sourceImage, 0, 0, size, size);
+                
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                
+                const preview = document.createElement('img');
+                preview.src = canvas.toDataURL('image/png');
+                preview.width = size > 100 ? 100 : size;
+                preview.height = size > 100 ? 100 : size;
+                
+                const label = document.createElement('div');
+                label.textContent = `${size}x${size}`;
+                
+                previewItem.appendChild(preview);
+                previewItem.appendChild(label);
+                previewContainer.appendChild(previewItem);
+            });
+        }
+        
+        downloadButton.addEventListener('click', function() {
+            if (!sourceImage) return;
+            
+            sizes.forEach(size => {
+                canvas.width = size;
+                canvas.height = size;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(sourceImage, 0, 0, size, size);
+                
+                const link = document.createElement('a');
+                link.download = `icon-${size}x${size}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+    </script>
+</body>
+</html>

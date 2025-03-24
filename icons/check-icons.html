@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PWA Icon Checker</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .missing { color: red; }
+        .found { color: green; }
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 5px 0; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <h1>PWA Icon Checker</h1>
+    <p>This page checks if all the required icon files for your PWA are present.</p>
+    
+    <h2>Status:</h2>
+    <ul id="status"></ul>
+    
+    <script>
+        // List of required icons
+        const requiredIcons = [
+            'icon-72x72.png',
+            'icon-96x96.png',
+            'icon-128x128.png',
+            'icon-144x144.png',
+            'icon-152x152.png',
+            'icon-192x192.png',
+            'icon-384x384.png',
+            'icon-512x512.png'
+        ];
+        
+        const statusList = document.getElementById('status');
+        
+        // Check if each icon exists
+        requiredIcons.forEach(icon => {
+            const li = document.createElement('li');
+            const img = new Image();
+            img.onload = function() {
+                li.innerHTML = `<span class="found">✓ ${icon} found (${this.width}x${this.height}px)</span>`;
+            };
+            img.onerror = function() {
+                li.innerHTML = `<span class="missing">✗ ${icon} missing</span>`;
+            };
+            img.src = './' + icon;
+            statusList.appendChild(li);
+        });
+    </script>
+</body>
+</html>
