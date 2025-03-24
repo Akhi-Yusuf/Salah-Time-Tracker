@@ -278,11 +278,11 @@ body {
 
 /* Settings gear icon */
 #openSettings {
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
 #openSettings:hover {
-  transform: rotate(30deg);
+  transform: rotate(15deg);
 }
 
 /* Add a subtle pulsing effect when clicked */
@@ -424,6 +424,12 @@ body {
 
 .light-theme .theme-switch .slider:before {
   background-color: var(--gold);
+}
+
+/* Remove the old theme-switch styles that are no longer needed */
+.theme-switch .slider:after,
+.theme-switch input:checked + .slider:after {
+  content: none;
 }
 
 /* Icon inside the slider */
@@ -590,4 +596,1037 @@ body {
 
 .light-theme ::-webkit-scrollbar-thumb {
   border-color: var(--bg-tertiary);
+}
+
+/* Make all theme transitions consistent */
+body, body * {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease;
+}
+
+/* Exclude certain elements from transition */
+.animate-pulse, 
+.next-prayer::before,
+#settingsPanel,
+#settingsBackdrop {
+  transition: none !important;
+}
+
+/* Make theme transitions faster (2.5x) and consistent */
+body, 
+body *:not(.animate-pulse, .next-prayer::before, #settingsPanel, #settingsBackdrop) {
+  transition: background-color 0.12s ease, 
+              color 0.12s ease, 
+              border-color 0.12s ease, 
+              box-shadow 0.12s ease !important;
+}
+
+/* Ensure no transitions for these elements */
+.animate-pulse, 
+.next-prayer::before,
+#settingsPanel,
+#settingsBackdrop,
+.bg-gold[style*="width"] {
+  transition: none !important;
+}
+
+/* Remove ALL transitions during theme changes */
+* {
+  transition: none !important;
+}
+
+/* Ensure specific elements also have no transitions */
+body, 
+.bg-gray-900, 
+.bg-gray-800, 
+.bg-gray-700, 
+.text-white, 
+.text-gray-400, 
+.text-gray-300, 
+.border-gray-600, 
+.bg-gold, 
+.next-prayer, 
+#prayer-times-grid,
+#current-time,
+#current-date,
+#additional-times,
+#prayer-details,
+.bg-gold\/20 {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Add this to your style.css file to fix scrollbar theming */
+
+/* Reset any existing scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* Dark theme scrollbar (default) */
+::-webkit-scrollbar-track {
+  background-color: #1f2937 !important; /* dark theme bg-secondary */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #d4af37 !important; /* gold */
+  border-radius: 5px;
+  border: 2px solid #1f2937 !important;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: #1f2937 !important;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d4af37 #1f2937 !important;
+}
+
+/* Light theme scrollbar overrides */
+.light-theme ::-webkit-scrollbar-track,
+.light-theme ::-webkit-scrollbar-corner {
+  background-color: #ffffff !important; /* light bg-secondary */
+}
+
+.light-theme ::-webkit-scrollbar-thumb {
+  background-color: #8b6d14 !important; /* darker gold */
+  border: 2px solid #ffffff !important;
+}
+
+/* Firefox light theme */
+.light-theme * {
+  scrollbar-color: #8b6d14 #ffffff !important;
+}
+
+/* Make sure the scrollbar doesn't animate during theme changes */
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-corner {
+  transition: none !important;
+}
+
+/* Header styling */
+.sticky {
+  position: -webkit-sticky;
+  position: sticky;
+}
+
+.backdrop-blur-md {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Fix mobile tap highlight */
+.no-tap-highlight {
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Ensure theme toggle animation works */
+#themeToggle:checked + label .dot {
+  transform: translateX(1.5rem) !important;
+}
+
+/* Ultimate settings button override - NO boxes or effects */
+#openSettings {
+  appearance: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  transform: none !important;
+}
+
+#openSettings:hover,
+#openSettings:focus,
+#openSettings:active {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Light theme adjustments */
+.light-theme .bg-gray-800 {
+  background-color: var(--bg-secondary);
+}
+
+/* Override button active state */
+button:active {
+  transform: scale(0.98);
+  transition: transform 0.1s;
+}
+
+#openSettings:focus,
+#openSettings:active,
+#openSettings:hover {
+  background-color: var(--gold-bg-soft) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Ensure settings button hover state */
+#openSettings {
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+#openSettings:hover {
+  transform: rotate(15deg);
+  background-color: var(--gold-bg-soft) !important;
+}
+
+/* Improved Settings Button */
+#openSettings {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  background-color: transparent;
+}
+
+#openSettings:hover {
+  background-color: var(--gold-bg-soft);
+  transform: rotate(30deg);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+#openSettings:active {
+  transform: scale(0.9) rotate(30deg);
+}
+
+#openSettings svg {
+  height: 24px;
+  width: 24px;
+  transition: transform 0.3s ease;
+}
+
+/* Improved Theme Toggle Switch */
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.theme-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-tertiary);
+  transition: .4s;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 5px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--gold-600);
+  overflow: hidden;
+}
+
+.theme-switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 3px;
+  background-color: var(--gold);
+  transition: .3s ease-in-out;
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.theme-switch input:checked + .slider {
+  background-color: var(--bg-tertiary);
+}
+
+.theme-switch input:checked + .slider:before {
+  transform: translateX(30px);
+}
+
+/* Icon styling for theme toggle */
+.theme-switch .slider:after {
+  position: absolute;
+  content: "☽";
+  color: var(--gold);
+  right: 9px;
+  font-size: 16px;
+  top: 5px;
+  z-index: 1;
+  transition: 0.3s;
+}
+
+.theme-switch input:checked + .slider:after {
+  content: "☀";
+  color: var(--gold);
+  left: 9px;
+  right: auto;
+}
+
+/* Light theme adjustments for toggle and settings */
+.light-theme .theme-switch .slider {
+  background-color: var(--bg-tertiary);
+  border-color: var(--gold);
+}
+
+.light-theme .theme-switch .slider:before {
+  background-color: var(--gold);
+  box-shadow: 0 0 8px rgba(139, 109, 20, 0.4);
+}
+
+.light-theme #openSettings {
+  color: var(--gold);
+}
+
+.light-theme #openSettings:hover {
+  background-color: var(--gold-bg-soft);
+  box-shadow: 0 0 10px rgba(139, 109, 20, 0.2);
+}
+
+/* Mobile responsiveness for toggle and settings */
+@media (max-width: 640px) {
+  .theme-switch {
+    width: 50px;
+    height: 26px;
+  }
+  
+  .theme-switch .slider:before {
+    height: 18px;
+    width: 18px;
+    bottom: 3px;
+  }
+  
+  .theme-switch input:checked + .slider:before {
+    transform: translateX(24px);
+  }
+  
+  .theme-switch .slider:after {
+    font-size: 14px;
+    top: 4px;
+    right: 8px;
+  }
+  
+  .theme-switch input:checked + .slider:after {
+    left: 8px;
+  }
+  
+  #openSettings {
+    width: 40px;
+    height: 40px;
+  }
+  
+  #openSettings svg {
+    height: 22px;
+    width: 22px;
+  }
+  
+  .header-controls {
+    padding: 4px 6px;
+    gap: 6px;
+  }
+}
+
+/* Override old styles that might conflict */
+#openSettings:focus,
+#openSettings:active,
+#openSettings:hover {
+  background-color: var(--gold-bg-soft) !important;
+  outline: none !important;
+}
+
+/* Container for settings controls */
+.header-controls {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 30px;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.light-theme .header-controls {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Container for header elements - unified container */
+.header-controls {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 12px 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Light theme adjustments */
+.light-theme .header-controls {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .header-controls {
+    padding: 10px 15px;
+  }
+  
+  .header-controls h1 {
+    font-size: 1.5rem;
+  }
+  
+  .header-controls p {
+    font-size: 0.8rem;
+  }
+}
+
+/* Settings Panel Slide Animation */
+#settingsPanel {
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+#settingsPanel.open {
+  transform: translateX(0);
+}
+
+/* Container for header elements */
+.header-controls {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Specific styles for the title container */
+header .header-controls:first-child {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 12px 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  header .header-controls:first-child {
+    padding: 8px 15px;
+  }
+  
+  header .header-controls:first-child h1 {
+    font-size: 1.5rem;
+  }
+  
+  header .header-controls:first-child p {
+    font-size: 0.8rem;
+  }
+}
+
+.light-theme .header-controls {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.theme-switch .slider:after,
+.theme-switch input:checked + .slider:after {
+  content: unset;
+}
+
+/* Clean up duplicated styles and add correct Settings Panel animation */
+
+/* --- HEADER CONTROLS (UNIFIED CONTAINER) --- */
+.header-controls {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 12px 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Light theme adjustments */
+.light-theme .header-controls {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .header-controls {
+    padding: 10px 15px;
+  }
+  
+  .header-controls h1 {
+    font-size: 1.5rem;
+  }
+  
+  .header-controls p {
+    font-size: 0.8rem;
+  }
+}
+
+/* --- SETTINGS PANEL ANIMATION --- */
+#settingsPanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 96rem; /* Removed 100% width to fix animation */
+  max-width: 384px; /* Fixed width for desktop */
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 50;
+}
+
+#settingsPanel.open {
+  transform: translateX(0);
+}
+
+/* Mobile settings panel */
+@media (max-width: 768px) {
+  #settingsPanel {
+    width: 100%; /* Full width on mobile */
+    max-width: none;
+  }
+}
+
+/* Improved theme toggle styling */
+#themeToggle:checked + label .toggle-dot {
+  transform: translateX(100%);
+}
+
+#themeToggle:checked + label .toggle-dot svg {
+  display: none;
+}
+
+#themeToggle:checked + label .ml-auto svg {
+  display: block;
+}
+
+#themeToggle + label .ml-auto svg {
+  display: none;
+}
+
+/* Transitions and animations */
+.toggle-dot {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toggle-dot:hover {
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.7);
+}
+
+/* Light theme adjustments */
+.light-theme #themeToggle + label {
+  background-color: #e2e8f0;
+}
+
+/* Fix for settings panel width */
+@media (min-width: 768px) {
+  #settingsPanel {
+    width: 24rem !important; /* 384px */
+    max-width: 90vw;
+  }
+  
+  #settingsPanel.open {
+    transform: translateX(0) !important;
+  }
+}
+
+/* Ensure the backdrop works properly */
+#settingsBackdrop.open {
+  display: block !important;
+}
+
+/* Enhanced settings button */
+.settings-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.settings-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(212, 175, 55, 0.3);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+.settings-btn:focus::after {
+  animation: ripple 1s ease-out;
+}
+
+.settings-btn:hover {
+  color: var(--gold) !important;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0) translate(-50%, -50%);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(20) translate(-50%, -50%);
+    opacity: 0;
+  }
+}
+
+/* Reset old styles that might be causing conflicts */
+#openSettings {
+  background-color: transparent !important;
+  transform: none !important;
+}
+
+#openSettings:hover, #openSettings:focus, #openSettings:active {
+  background-color: transparent !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Add these CSS rules to fix the toggle button */
+#themeToggle:checked + label .toggle-dot {
+  transform: translateX(120%) !important;
+}
+
+/* Fix icon visibility */
+#themeToggle + label .toggle-dot svg {
+  display: block !important;
+}
+
+#themeToggle:checked + label .toggle-dot svg {
+  display: none !important;
+}
+
+#themeToggle + label .ml-auto svg {
+  display: none !important;
+}
+
+#themeToggle:checked + label .ml-auto svg {
+  display: block !important;
+}
+
+/* Fix light mode appearance */
+.light-theme #themeToggle + label {
+  background-color: #e2e8f0;
+}
+
+/* Fixed toggle button styling */
+#themeToggle:checked + label .toggle-dot {
+  transform: translateX(calc(9px + 100%)) !important;
+}
+
+/* Fix the icon visibility */
+.toggle-dot {
+  position: absolute;
+  left: 2px;
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Fix the sun/moon icon colors and visibility */
+#themeToggle:not(:checked) + label .ml-auto svg {
+  opacity: 0;
+}
+
+#themeToggle:checked + label .toggle-dot svg {
+  opacity: 0;
+}
+
+#themeToggle:checked + label .ml-auto svg {
+  opacity: 1;
+}
+
+/* Fix light mode appearance */
+.light-theme #themeToggle + label {
+  background-color: #e2e8f0;
+}
+
+.light-theme #themeToggle:checked + label .toggle-dot {
+  background-color: var(--gold);
+}
+
+/* Modern Toggle Button Styles */
+.modern-toggle-container {
+  position: relative;
+  display: inline-block;
+}
+
+.modern-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  width: 3.75rem;
+  height: 1.75rem;
+  position: relative;
+}
+
+.modern-toggle-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #374151; /* gray-700 */
+  border-radius: 999px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.modern-toggle-thumb {
+  position: absolute;
+  top: 0.1875rem;
+  left: 0.25rem;
+  width: 1.375rem;
+  height: 1.375rem;
+  background-color: var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Toggle state animations */
+#themeToggle:checked + .modern-toggle .modern-toggle-thumb {
+  transform: translateX(2rem);
+}
+
+#themeToggle:checked + .modern-toggle .modern-toggle-track {
+  background-color: #4B5563; /* gray-600 */
+}
+
+/* Sun/Moon icons */
+.modern-toggle-thumb .moon-icon,
+.modern-toggle-thumb .sun-icon {
+  position: absolute;
+  color: #1F2937; /* dark blue/gray-800 */
+  transition: opacity 0.3s ease;
+}
+
+.moon-icon {
+  opacity: 1;
+}
+
+.sun-icon {
+  opacity: 0;
+}
+
+#themeToggle:checked + .modern-toggle .moon-icon {
+  opacity: 0;
+}
+
+#themeToggle:checked + .modern-toggle .sun-icon {
+  opacity: 1;
+}
+
+/* Light theme adjustments */
+.light-theme .modern-toggle-track {
+  background-color: #E5E7EB; /* gray-200 */
+}
+
+.light-theme .modern-toggle-thumb {
+  background-color: var(--gold);
+}
+
+/* Focus states for accessibility */
+#themeToggle:focus + .modern-toggle .modern-toggle-track {
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.5);
+}
+
+/* Hover effect */
+.modern-toggle:hover .modern-toggle-thumb {
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Theme-Aware Toggle Button Styles with Proper Contrast */
+.theme-toggle-container {
+  position: relative;
+  display: inline-block;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  width: 3.5rem;
+  height: 1.75rem;
+  position: relative;
+}
+
+.theme-toggle-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #1F2937; /* Dark gray for dark theme */
+  border-radius: 999px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 0.1875rem;
+  left: 0.25rem;
+  width: 1.375rem;
+  height: 1.375rem;
+  background-color: #D4AF37; /* Gold */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Toggle state animations */
+#themeToggle:checked + .theme-toggle .theme-toggle-thumb {
+  transform: translateX(1.75rem);
+}
+
+/* Icon styling for proper contrast */
+.theme-toggle-thumb .moon-icon,
+.theme-toggle-thumb .sun-icon {
+  position: absolute;
+  color: #1F2937; /* Dark color for contrast against gold */
+  transition: opacity 0.3s ease;
+}
+
+.moon-icon {
+  opacity: 1;
+}
+
+.sun-icon {
+  opacity: 0;
+}
+
+#themeToggle:checked + .theme-toggle .moon-icon {
+  opacity: 0;
+}
+
+#themeToggle:checked + .theme-toggle .sun-icon {
+  opacity: 1;
+}
+
+/* Light theme adjustments with proper contrast */
+.light-theme .theme-toggle-track {
+  background-color: #D1D5DB; /* Light gray that contrasts with gold */
+}
+
+.light-theme .theme-toggle-thumb {
+  background-color: #B7922A; /* Slightly darker gold for contrast in light mode */
+}
+
+.light-theme .theme-toggle-thumb .moon-icon,
+.light-theme .theme-toggle-thumb .sun-icon {
+  color: #1F2937; /* Dark icon color for contrast in light mode */
+}
+
+/* Active states with accessibility */
+#themeToggle:focus + .theme-toggle .theme-toggle-track {
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.4);
+}
+
+/* Subtle hover effect */
+.theme-toggle:hover .theme-toggle-thumb {
+  box-shadow: 0 0 8px 2px rgba(212, 175, 55, 0.4);
+}
+
+/* Remove the controls-container styles that were wrapping both elements */
+
+/* Container just for the toggle with rounded corners */
+.theme-toggle-container {
+  position: relative;
+  display: inline-block;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  width: 3.5rem;
+  height: 1.75rem;
+  position: relative;
+  padding: 0 0.25rem;
+  border-radius: 1.5rem; /* Increased border radius */
+  background-color: var(--bg-tertiary); /* Changed to tertiary background */
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Added shadow */
+}
+
+/* Light theme version */
+.light-theme .theme-toggle {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  width: 1.125rem;
+  height: 1.125rem;
+  background-color: var(--gold);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0.25rem;
+  transition: transform 0.25s ease;
+}
+
+#themeToggle:checked + .theme-toggle .theme-toggle-thumb {
+  transform: translate(1.75rem, -50%);
+}
+
+/* Icon styles - flat, no effects */
+.moon-icon, .sun-icon {
+  color: var(--text-secondary);
+  width: 0.875rem;
+  height: 0.875rem;
+  z-index: 1;
+}
+
+.moon-icon {
+  margin-left: auto;
+}
+
+.sun-icon {
+  margin-right: auto;
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .theme-toggle {
+    width: 2.75rem;
+    height: 1.25rem;
+    padding: 0 0.25rem;
+  }
+  
+  .theme-toggle-thumb {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+  
+  #themeToggle:checked + .theme-toggle .theme-toggle-thumb {
+    transform: translate(1.5rem, -50%);
+  }
+  
+  .moon-icon, .sun-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+}
+
+/* PWA Install Button Styles */
+#installApp {
+  background-color: var(--gold);
+  color: var(--bg-primary);
+  transition: transform 0.2s, background-color 0.2s;
+  border: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+#installApp:hover {
+  background-color: var(--gold-600);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+#installApp:active {
+  transform: translateY(0);
+}
+
+.light-theme #installApp {
+  background-color: var(--gold);
+  color: var(--bg-secondary);
+}
+
+/* Make header static on desktop and sticky only on mobile */
+@media (min-width: 768px) {
+  /* Desktop - override sticky behavior */
+  .sticky.top-0 {
+    position: static;
+    top: auto;
+  }
+}
+
+/* Keep header sticky on mobile */
+@media (max-width: 767px) {
+  .sticky.top-0 {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+  }
+}
+
+/* Make header absolutely NOT sticky on desktop with increased specificity and !important */
+@media (min-width: 768px) {
+  /* Desktop - completely disable sticky behavior */
+  .sticky.top-0,
+  div.sticky.top-0,
+  .max-w-6xl .sticky.top-0 {
+    position: relative !important;
+    top: auto !important;
+    z-index: 30 !important;
+  }
+
+  /* Target the specific header with all its classes */
+  .sticky.top-0.z-40.bg-gray-800.backdrop-blur-md.rounded-xl.border.border-gold-600\/20.mb-4.shadow-lg {
+    position: relative !important;
+    top: auto !important;
+  }
+}
+
+/* Keep header sticky only on mobile */
+@media (max-width: 767px) {
+  .sticky.top-0 {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 0 !important;
+  }
 }
